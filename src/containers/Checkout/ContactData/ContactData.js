@@ -82,9 +82,16 @@ class ContactData extends Component {
     orderHandler = (event) => {
         event.preventDefault();
         this.setState({ loading: true });
+        const formData = {};
+
+        for (let formElId in this.state.orderForm) {
+            formData[formElId] = this.state.orderForm[formElId].value;
+        }
+
         const order = {
             ingredients: this.props.ingredients,
-            price: this.props.price
+            price: this.props.price,
+            orderData: formData
         }
         axiosInstance.post('/orders.json', order)
             .then(response => {
@@ -98,6 +105,22 @@ class ContactData extends Component {
             });
     }
 
+    inputChangedHandler = (event, inputIdentifier) => {
+        const updatedOrderForm = {
+            ...this.state.orderForm
+        };
+
+        const updatedFormEl = {
+            ...updatedOrderForm[inputIdentifier]
+        };
+
+        updatedFormEl.value = event.target.value;
+        updatedOrderForm[inputIdentifier] = updatedFormEl;
+        this.setState({ orderForm: updatedOrderForm });
+
+
+    }
+
     render() {
         const formElementsArray = [];
 
@@ -109,14 +132,14 @@ class ContactData extends Component {
         }
 
         let form = (
-            <form>
+            <form onSubmit={this.orderHandler}>
                 {formElementsArray.map(formEl => (
-                    <Input key={formEl.id} elementType={formEl.config.elementType} elementConfig={formEl.config.elementConfig} value={formEl.config.value} />
+                    <Input key={formEl.id} elementType={formEl.config.elementType} elementConfig={formEl.config.elementConfig} value={formEl.config.value}
+                        changed={(event) => this.inputChangedHandler(event, formEl.id)} />
                 ))}
-                <Button btnType="Success"
-                    clicked={this.orderHandler}>
+                <Button btnType="Success">
                     ORDER
-                    </Button>
+                </Button>
             </form>
         );
 
